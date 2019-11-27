@@ -919,7 +919,7 @@ int
 loadwords(char *filename)
 {
 	int fd, ignore, k, l;
-	char *curpos, *newpos, *p;
+	char *curpos, *newpos, *p, *respos;
 	char **pointer;
 	char buf[60], wordpath[MAXPATHLEN];
 	size_t i, j;
@@ -988,6 +988,7 @@ loadwords(char *filename)
 	}
 
 	words.word = xmalloc(sizeof(char *) * 1024);
+	words.result = xmalloc(sizeof(char *) * 1024);
 	words.max = 1024;
 	words.n = 0;
 
@@ -1011,13 +1012,24 @@ loadwords(char *filename)
 			continue;
 		}
 
-		for (ignore = 0, p = curpos; *p != '\0'; p++)
-			if (!isprint(*p) || isspace(*p)) {
+                respos = curpos;
+
+		for (ignore = 0, p = curpos; *p != '\0'; p++) {
+			if (!isprint(*p)) {
 				ignore = 1;
 				break;
 			}
-		if (!ignore)
-			words.word[words.n++] = curpos;
+                        if (isspace(*p)) {
+                                *p = '\0';
+                                respos = p + 1;
+                        }
+                }
+
+		if (!ignore) {
+			words.word[words.n] = curpos;
+                        words.result[words.n++] = respos;
+                }
+
 
 		if (words.n >= words.max) {
 			if ((size_t)-1 - 1024 < words.max)

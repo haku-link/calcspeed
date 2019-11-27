@@ -183,6 +183,18 @@ struct option options[] = {
  * XXX: Can result in a veeery long loop when there are many words on
  *      field and only a few words in word list (no duplicates allowed).
  */
+char *
+getresult(char *word)
+{
+        unsigned int i;
+        for (i = 0; i < words.n; i++) {
+            if (!strcmp(words.word[i], word))
+                return words.result[i];
+        }
+        return word;
+}
+
+
 int
 addnewword(char *newword)
 {
@@ -190,6 +202,8 @@ addnewword(char *newword)
 	int freeslot[22];
 	size_t i;
 	char *myword, *p;
+        char *result;
+        char *resultstring[22];
 
 	if (newword != NULL) {
 		if (strlen(newword) > (size_t)rules.maxlen)
@@ -210,14 +224,19 @@ addnewword(char *newword)
 
 	slot = freeslot[r(count)];
 	myword = (newword == NULL) ? words.word[r(words.n)] : newword;
+        result = getresult(myword);
+        for (i = 0; i < 22; i++) {
+                resultstring[i] = getresult(wordstring[i]);
+        }
 
 	do {
 		for (dup = 0, i = 0; i < 22; i++)
-			if (!strcmp(wordstring[i], myword)) {
+			if (!strcmp(resultstring[i], result)) {
 				if (newword != NULL)
 					return FALSE;
 				dup = 1;
 				myword = words.word[r(words.n)];
+                                result = getresult(myword);
 				break;
 			}
 	} while (dup);
@@ -673,7 +692,7 @@ parseinput(int *escend, char *input, clock_t *starttime, unsigned *inputpos,
 	case 10: /* ENTER */
 		foundword = 0;
 		for (i = 0; i < 22; i++) {
-			if (strcmp(input, wordstring[i]))
+			if (strcmp(input, getresult(wordstring[i])))
 				continue;
 			foundword = 1;
 			now.wordswritten++;

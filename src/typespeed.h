@@ -90,6 +90,7 @@ struct rules {
 struct rawdata {
 	char *bulk;
 	char **word;
+        char **result;
 	size_t n;
 	size_t max;
 } words;
